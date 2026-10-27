@@ -38,10 +38,12 @@ go build ./...
 ## Дополнительные программы
 
 Команды запуска карточки и конвертера из корня проекта:
+```text
 go run ./cmd/experiments
 go run ./cmd/card
 go run ./cmd/time-converter
 go run ./cmd/task-summary
+```
 
 ## Проверенные данные
 
