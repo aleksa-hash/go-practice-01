@@ -37,28 +37,57 @@ type MemoryStore struct {
 func NewMemoryStore() *MemoryStore { return &MemoryStore{nextID: 1} }
 
 func (s *MemoryStore) Add(title string, priority int) (Task, error) {
-	// TODO: проверьте строку и приоритет, добавьте Task, увеличьте nextID.
-	return Task{}, ErrInvalid
+	title = strings.TrimSpace(title)                 //убераем пробелы по краям
+	if title == "" || priority < 1 || priority > 3 { //проверяем приоритет
+		return Task{}, ErrInvalid
+	}
+	task := Task{ID: s.nextID, Title: title, Status: "new", Priority: priority} //создавать Task со статусом new
+	s.tasks = append(s.tasks, task)                                             //добавить Тask
+	s.nextID++                                                                  // увеличьте nextID
+	return task, nil
 }
 
-func (s *MemoryStore) Get(id int) (Task, error) {
-	// TODO: найдите задачу или верните ошибку через %w.
+func (s *MemoryStore) Get(id int) (Task, error) { //находит задачу или возвращает ошибку через %w.
+	for i := range s.tasks {
+		if s.tasks[i].ID == id { //проверка ID
+			return s.tasks[i], nil
+		}
+	}
 	return Task{}, fmt.Errorf("id %d: %w", id, ErrNotFound)
 }
 
 func (s *MemoryStore) Complete(id int) error {
-	// TODO: изменяйте s.tasks[i], а не копию.
+	for i := range s.tasks {
+		if s.tasks[i].ID == id { //проверяем ID
+			s.tasks[i].Status = "done" //меняем статус на done
+			return nil
+		}
+	}
 	return ErrNotFound
 }
 
-func (s *MemoryStore) Delete(id int) error {
-	// TODO: удалите задачу по индексу.
+func (s *MemoryStore) Delete(id int) error { // удалите задачу по индексу.
+	for i := range s.tasks {
+		if s.tasks[i].ID == id { //если такой ID есть, то:
+			rez := []Task{} //создаем пустой срез
+			for j := range s.tasks {
+				if j != i { //при несовпадени индексов добавляем в срез
+					rez = append(rez, s.tasks[j])
+				}
+			}
+			s.tasks = rez
+			return nil
+		}
+	}
 	return ErrNotFound
 }
 
-func (s *MemoryStore) List() []Task {
-	// TODO: верните копию среза.
-	return nil
+func (s *MemoryStore) List() []Task { //верните копию среза.
+	rez := []Task{}
+	for i := range s.tasks {
+		rez = append(rez, s.tasks[i])
+	}
+	return rez
 }
 
 func readLine(scanner *bufio.Scanner, prompt string) (string, bool) {
@@ -139,4 +168,5 @@ func run(store TaskStore, scanner *bufio.Scanner) {
 
 func main() {
 	run(NewMemoryStore(), bufio.NewScanner(os.Stdin))
+
 }
